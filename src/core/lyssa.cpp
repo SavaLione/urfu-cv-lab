@@ -43,49 +43,44 @@
 
 int main()
 {
-	//Open the default video camera
+	/* Default video camera object */
 	cv::VideoCapture cap(0);
 
-	// if not success, exit program
 	if(cap.isOpened() == false)
 	{
-		std::cout << "Cannot open the video camera" << std::endl;
-		std::cin.get(); //wait for any key press
-		return -1;
+		spdlog::error("Cannot open the video camera.");
+		return EXIT_FAILURE;
 	}
 
-	double dWidth  = cap.get(cv::CAP_PROP_FRAME_WIDTH);	 //get the width of frames of the video
-	double dHeight = cap.get(cv::CAP_PROP_FRAME_HEIGHT); //get the height of frames of the video
+	/* Get the width of frames of the video */
+	double dWidth  = cap.get(cv::CAP_PROP_FRAME_WIDTH);
+
+	/* Get the height of frames of the video */
+	double dHeight = cap.get(cv::CAP_PROP_FRAME_HEIGHT);
 
 	spdlog::info("Resolution of the video: {}x{}", dWidth, dHeight);
 
-	std::string window_name = "My Camera Feed";
-	cv::namedWindow(window_name); //create a window called "My Camera Feed"
+	std::string window_name = "OpenCV object detection by Saveliy Pototskiy";
+	
+	cv::namedWindow(window_name);
 
 	while(true)
 	{
 		cv::Mat frame;
-		bool bSuccess = cap.read(frame); // read a new frame from video
 
-		//Breaking the while loop if the frames cannot be captured
-		if(bSuccess == false)
+		if(!cap.read(frame))
 		{
-			spdlog::error("Video camera has disconnected.");
+			spdlog::error("Can't read the frame from a camera.");
 			return EXIT_FAILURE;
 		}
 
-		//show the frame in the created window
 		imshow(window_name, frame);
 
-		//wait for for 10 ms until any key is pressed.
-		//If the 'Esc' key is pressed, break the while loop.
-		//If the any other key is pressed, continue the loop
-		//If any key is not pressed withing 10 ms, continue the loop
 		if(cv::waitKey(10) == 27)
 		{
 			spdlog::info("Esc key is pressed by user.");
 			spdlog::info("Stoppig the video.");
-			break;
+			return EXIT_SUCCESS;
 		}
 	}
 
