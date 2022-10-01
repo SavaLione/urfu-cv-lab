@@ -40,6 +40,7 @@
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
+#include <opencv2/core.hpp>
 #if defined(IMGUI_IMPL_OPENGL_ES2)
 #include <GLES2/gl2.h>
 #endif
@@ -58,6 +59,7 @@
 #include <opencv2/opencv.hpp>
 #include <spdlog/spdlog.h>
 #include <string>
+#include <vector>
 
 void place_text_info(cv::Mat &frame);
 void draw_rectangle(cv::Mat &frame);
@@ -130,7 +132,7 @@ void cv_operations()
 
 	cv::namedWindow(window_name);
 
-	while(true)
+	while(!variables_instance.exit)
 	{
 		// cv::Mat frame;
 
@@ -146,12 +148,12 @@ void cv_operations()
 		// place_text_info(frame);
 		// draw_rectangle(frame);
 
-		int low_h  = 0;
-		int high_h = 179;
-		int low_s  = 0;
-		int high_s = 255;
-		int low_v  = 0;
-		int high_v = 255;
+		// int low_h  = 0;
+		// int high_h = 179;
+		// int low_s  = 0;
+		// int high_s = 255;
+		// int low_v  = 0;
+		// int high_v = 255;
 
 		// cvCreateTrackbar("LowH", "Control", &low_h, 179);
 		// cvCreateTrackbar("HighH", "Control", &high_h, 179);
@@ -162,27 +164,75 @@ void cv_operations()
 		// cvCreateTrackbar("LowV", "Control", &low_v, 255);
 		// cvCreateTrackbar("HighV", "Control", &high_v, 255);
 
-		cv::Mat img_HSV;
-		cv::cvtColor(frame, img_HSV, cv::COLOR_BGR2HSV);
+		// cv::Mat img_HSV;
+		// cv::cvtColor(frame, img_HSV, cv::COLOR_BGR2HSV);
+		// cv::Mat img_thresholded;
+		// cv::inRange(
+		// 	img_HSV,
+		// 	cv::Scalar(variables_instance.h_low, variables_instance.s_low, variables_instance.v_low),
+		// 	cv::Scalar(variables_instance.h_high, variables_instance.s_high, variables_instance.v_high),
+		// 	img_thresholded);
+
+		// cv::erode(img_thresholded, img_thresholded, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(5, 5)));
+		// cv::dilate(img_thresholded, img_thresholded, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(5, 5)));
+
+		// cv::dilate(img_thresholded, img_thresholded, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(5, 5)));
+		// cv::erode(img_thresholded, img_thresholded, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(5, 5)));
+
+		// place_text_info(frame);
+
+		/*
+			Matrix for HSV scheme frame
+    		HSV - Hue Saturation Value
+		*/
+		cv::Mat frame_HSV;
+
 		cv::Mat img_thresholded;
-		cv::inRange(img_HSV, cv::Scalar(low_h, low_s, low_v), cv::Scalar(high_h, high_s, high_v), img_thresholded);
+
+		/*
+			We convert BRG (original frame) to HSV frame
+			BGR - is RGB color space
+			HSV - Hue Saturation Value
+		*/
+		cv::cvtColor(frame, frame_HSV, cv::COLOR_BGR2HSV);
+
+		cv::Scalar green_mask_low(variables_instance.h_low, variables_instance.s_low, variables_instance.v_low);
+		cv::Scalar green_mask_high(variables_instance.h_high, variables_instance.s_high, variables_instance.v_high);
+
+		cv::inRange(frame_HSV, green_mask_low, green_mask_high, img_thresholded);
 
 		cv::erode(img_thresholded, img_thresholded, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(5, 5)));
 		cv::dilate(img_thresholded, img_thresholded, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(5, 5)));
 
-		cv::dilate(img_thresholded, img_thresholded, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(5, 5)));
-		cv::erode(img_thresholded, img_thresholded, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(5, 5)));
+		std::vector<std::vector<cv::Point>> contours;
+		std::vector<cv::Vec4i> hierarchy;
 
-		place_text_info(frame);
+		cv::findContours(img_thresholded, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
+
+		cv::RNG rng(12345);
+
+		cv::Mat drawing = cv::Mat::zeros(frame.size(), CV_8UC3);
+		for(std::size_t i = 0; i < contours.size(); i++)
+		{
+			// cv::Scalar color = cv::Scalar(rng.uniform(0, 256), rng.uniform(0, 256), rng.uniform(0, 256));
+			// cv::drawContours(drawing, contours, (int)i, color, 2, cv::LINE_8, hierarchy, 0);
+			// int thickness = 2;
+			// cv::rectangle(frame, top_left, bottom_right, cv::Scalar(255, 255, 255), thickness, cv::LINE_8);
+			int thickness = 2;
+			cv::Rect box = cv::boundingRect(contours[i]);
+			cv::rectangle(frame, box, cv::Scalar(255, 255, 255), thickness, cv::LINE_8);
+		}
 
 		cv::imshow("Thresholded Image", img_thresholded);
 		cv::imshow(window_name, frame);
+		// cv::imshow("drawing", drawing);
 
 		if(cv::waitKey(10) == 27)
 		{
 			spdlog::info("Esc key is pressed by user.");
 			spdlog::info("Stoppig the video.");
-			exit(EXIT_SUCCESS);
+			// exit(EXIT_SUCCESS);
+			variables_instance.exit = true;
 		}
 	}
 }
@@ -264,7 +314,8 @@ void gui()
 	ImVec4 clear_color		 = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
 	// Main loop
-	while(!glfwWindowShouldClose(window))
+	// while(!glfwWindowShouldClose(window))
+	while(!variables_instance.exit)
 	{
 		// Poll and handle events (inputs, window resize, etc.)
 		// You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
@@ -278,16 +329,11 @@ void gui()
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
-		// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
-		if(show_demo_window)
-			ImGui::ShowDemoWindow(&show_demo_window);
-
-		// 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
 		{
 			// static float f	   = 0.0f;
 			// static int counter = 0;
 
-			ImGui::Begin("Hello, world!"); // Create a window called "Hello, world!" and append into it.
+			ImGui::Begin("Variables");
 
 			// ImGui::Text("This is some useful text.");		   // Display some text (you can use a format strings too)
 			// ImGui::Checkbox("Demo Window", &show_demo_window); // Edit bools storing our window open/close state
@@ -301,22 +347,23 @@ void gui()
 			// ImGui::SameLine();
 			// ImGui::Text("counter = %d", counter);
 
-			ImGui::SliderInt("test_variable", &variables_instance.test_variable, 0, 255);
+			// ImGui::SliderInt("test_variable", &variables_instance.test_variable, 0, 255);
+
+			ImGui::SliderInt("H low", &variables_instance.h_low, 0, 255);
+			ImGui::SliderInt("H high", &variables_instance.h_high, 0, 255);
+			ImGui::SliderInt("S low", &variables_instance.s_low, 0, 255);
+			ImGui::SliderInt("S high", &variables_instance.s_high, 0, 255);
+			ImGui::SliderInt("V low", &variables_instance.v_low, 0, 255);
+			ImGui::SliderInt("V high", &variables_instance.v_high, 0, 255);
+
+			ImGui::Separator();
+			if(ImGui::Button("Exit"))
+			{
+				variables_instance.exit = true;
+			}
 
 			ImGui::Text(
 				"Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-			ImGui::End();
-		}
-
-		// 3. Show another simple window.
-		if(show_another_window)
-		{
-			ImGui::Begin(
-				"Another Window",
-				&show_another_window); // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-			ImGui::Text("Hello from another window!");
-			if(ImGui::Button("Close Me"))
-				show_another_window = false;
 			ImGui::End();
 		}
 

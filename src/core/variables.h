@@ -48,7 +48,18 @@ public:
 
 	~variables();
 
-    int test_variable = 0;
+	int test_variable = 0;
+
+	int h_low  = 25;
+	int h_high = 100;
+	int s_low  = 50;
+	int s_high = 255;
+	int v_low  = 70;
+	int v_high = 255;
+
+    bool exit = false;
+
+    
 
 private:
 	variables();
