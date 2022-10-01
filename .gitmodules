@@ -1,0 +1,6 @@
+[submodule "lib/imgui-cmake"]
+	path = lib/imgui-cmake
+	url = https://github.com/SavaLione/imgui-cmake.git
+[submodule "lib/glfw"]
+	path = lib/glfw
+	url = https://github.com/glfw/glfw.git

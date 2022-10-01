@@ -55,6 +55,24 @@ endfunction(function_output_directory)
 #################################################################################
 #                                    Libraries                                  #
 #################################################################################
+# OpenGL
+find_package(OpenGL REQUIRED)
+
+# GLFW
+set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(BUILD_SHARED_LIBS ON CACHE BOOL "" FORCE)
+
+set(GLFW_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/lib/glfw/include" CACHE PATH "GLFW lib include")
+add_subdirectory(${PROJECT_SOURCE_DIR}/lib/glfw)
+
+# imgui
+set(IMGUI_BUILD_BACKEND_OPENGL3 ON CACHE BOOL "" FORCE)
+set(IMGUI_BUILD_BACKEND_GLFW ON CACHE BOOL "" FORCE)
+
+set(IMGUI_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/lib/imgui-cmake/include" CACHE PATH "imgui lib include")
+add_subdirectory(${PROJECT_SOURCE_DIR}/lib/imgui-cmake)
 
 # OpenCV
 find_package(OpenCV REQUIRED)
@@ -69,6 +87,8 @@ find_package(spdlog REQUIRED)
 set(LYSSA_CORE_SRC
     src/core/lyssa.h
     src/core/lyssa.cpp
+    src/core/variables.h
+    src/core/variables.cpp
 )
 
 # Lyssa application
@@ -89,6 +109,18 @@ target_compile_features(${LYSSA_PROJECT} PRIVATE cxx_auto_type)
 #                                Libraries include                              #
 #################################################################################
 
+# OpenGL
+target_link_libraries(${LYSSA_PROJECT} ${OPENGL_gl_LIBRARY})
+target_include_directories(${LYSSA_PROJECT} PUBLIC ${OPENGL_INCLUDE_DIR})
+
+# GLFW
+target_link_libraries(${LYSSA_PROJECT} glfw)
+target_include_directories(${LYSSA_PROJECT} PUBLIC ${GLFW_INCLUDE_DIR})
+
+# imgui
+target_link_libraries(${LYSSA_PROJECT} imgui imgui_glfw imgui_opengl3)
+target_include_directories(${LYSSA_PROJECT} PUBLIC ${IMGUI_INCLUDE_DIR})
+
 # OpenCV
 target_link_libraries(${LYSSA_PROJECT} ${OpenCV_LIBS})
 target_include_directories(${LYSSA_PROJECT} PUBLIC ${OpenCV_INCLUDE_DIRS})
@@ -100,4 +132,8 @@ target_include_directories(${LYSSA_PROJECT} PUBLIC ${SPDLOG_INCLUDE_DIR})
 #################################################################################
 #                                 Output directory                              #
 #################################################################################
-function_output_directory(${LYSSA_PROJECT})                       # Lyssa application
+function_output_directory(glfw)                                     # glfw library
+function_output_directory(imgui)                                    # imgui library
+function_output_directory(imgui_glfw)                               # imgui_glfw library
+function_output_directory(imgui_opengl3)                            # imgui_opengl3 library
+function_output_directory(${LYSSA_PROJECT})                         # Lyssa application
