@@ -28,27 +28,15 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/**
+ /**
  * @file
- * @brief Lyssa application
+ * @brief OpenCV labs
  * @author Saveliy Pototskiy (SavaLione)
- * @date 16 Sep 2022
+ * @date 10 Oct 2022
  */
-#include "core/lyssa.h"
+#ifndef CORE_CV_H
+#define CORE_CV_H
 
-#include "core/cv.h"
-#include "core/gui.h"
-#include "core/variables.h"
+void cv_first_lab();
 
-#include <future>
-
-int main()
-{
-	/* Variables initialization */
-	variables &variables_instance = variables::instance();
-
-	auto async_gui = std::async(gui);
-	auto async_ocv = std::async(cv_first_lab);
-
-	return 0;
-}
+#endif // CORE_CV_H
