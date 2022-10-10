@@ -55,6 +55,9 @@ endfunction(function_output_directory)
 #################################################################################
 #                                    Libraries                                  #
 #################################################################################
+# Threads
+find_package(Threads REQUIRED)
+
 # OpenGL
 find_package(OpenGL REQUIRED)
 
@@ -104,10 +107,13 @@ target_include_directories(${LYSSA_PROJECT} PUBLIC ${PROJECT_SOURCE_DIR}/src)
 
 # C++ features
 target_compile_features(${LYSSA_PROJECT} PRIVATE cxx_auto_type)
+# set_property(TARGET ${LYSSA_PROJECT} PROPERTY CXX_STANDARD 17)
 
 #################################################################################
 #                                Libraries include                              #
 #################################################################################
+# Threads
+target_link_libraries(${LYSSA_PROJECT} Threads::Threads)
 
 # OpenGL
 target_link_libraries(${LYSSA_PROJECT} ${OPENGL_gl_LIBRARY})

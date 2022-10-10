@@ -52,7 +52,7 @@
 #include <cstdlib>
 #include <future>
 #include <iostream>
-#include <opencv2/core/types.hpp>
+#include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
@@ -60,6 +60,7 @@
 #include <spdlog/spdlog.h>
 #include <string>
 #include <vector>
+
 
 void place_text_info(cv::Mat &frame);
 void draw_rectangle(cv::Mat &frame);
@@ -219,7 +220,7 @@ void cv_operations()
 			// int thickness = 2;
 			// cv::rectangle(frame, top_left, bottom_right, cv::Scalar(255, 255, 255), thickness, cv::LINE_8);
 			int thickness = 2;
-			cv::Rect box = cv::boundingRect(contours[i]);
+			cv::Rect box  = cv::boundingRect(contours[i]);
 			cv::rectangle(frame, box, cv::Scalar(255, 255, 255), thickness, cv::LINE_8);
 		}
 
