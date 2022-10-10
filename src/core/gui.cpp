@@ -91,7 +91,7 @@ void gui()
 #endif
 
 	// Create window with graphics context
-	GLFWwindow *window = glfwCreateWindow(1280, 720, "Dear ImGui GLFW+OpenGL3 example", NULL, NULL);
+	GLFWwindow *window = glfwCreateWindow(720, 720, "OpenCV labs settings", NULL, NULL);
 	if(window == NULL)
 		return;
 	glfwMakeContextCurrent(window);
@@ -175,6 +175,10 @@ void gui()
 			ImGui::SliderInt("S high", &variables_instance.s_high, 0, 255);
 			ImGui::SliderInt("V low", &variables_instance.v_low, 0, 255);
 			ImGui::SliderInt("V high", &variables_instance.v_high, 0, 255);
+
+            ImGui::Separator();
+
+            ImGui::SliderInt("Contours minimum size", &variables_instance.contours_min_size, 0, 1024);
 
 			ImGui::Separator();
 			if(ImGui::Button("Exit"))

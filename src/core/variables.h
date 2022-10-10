@@ -59,7 +59,7 @@ public:
 
     bool exit = false;
 
-    
+    int contours_min_size = 50;
 
 private:
 	variables();

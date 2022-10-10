@@ -39,6 +39,7 @@
 #include "core/variables.h"
 
 #include <opencv2/core.hpp>
+#include <opencv2/core/types.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
@@ -50,7 +51,7 @@ void draw_rectangle(cv::Mat &frame, cv::Rect const &rectangle);
 
 void place_text_info(cv::Mat &frame)
 {
-	std::string label = "Author: Pototskiy Saveliy (FOM-210510)";
+	std::string label = "Pototskiy Saveliy (FOM-210510)";
 
 	cv::putText(frame, label, cv::Point(0, 15), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 255, 0));
 }
@@ -68,59 +69,37 @@ void cv_first_lab()
 	/* Variables initialization */
 	variables &variables_instance = variables::instance();
 
-	// /* Default video camera object */
-	// cv::VideoCapture cap(0);
+	/* Default video capture device */
+	cv::VideoCapture video_capture_device(0);
 
-	// if(cap.isOpened() == false)
-	// {
-	// 	spdlog::error("Cannot open the video camera.");
-	// 	return EXIT_FAILURE;
-	// }
+	if(video_capture_device.isOpened() == false)
+	{
+		spdlog::error("Cannot open the video camera.");
+		variables_instance.exit = true;
+	}
 
-	// /* Get the width of frames of the video */
-	// double dWidth = cap.get(cv::CAP_PROP_FRAME_WIDTH);
+	/* Print width and height of the capture device frame */
+	spdlog::info(
+		"Resolution of the capture device frame: {}x{}",
+		video_capture_device.get(cv::CAP_PROP_FRAME_WIDTH),
+		video_capture_device.get(cv::CAP_PROP_FRAME_HEIGHT));
 
-	// /* Get the height of frames of the video */
-	// double dHeight = cap.get(cv::CAP_PROP_FRAME_HEIGHT);
-
-	// spdlog::info("Resolution of the video: {}x{}", dWidth, dHeight);
-
-	std::string window_name = "OpenCV object detection by Saveliy Pototskiy";
+	std::string window_name = "OpenCV colour object detection";
 
 	cv::namedWindow(window_name);
 
 	while(!variables_instance.exit)
 	{
-		// cv::Mat frame;
+		cv::Mat frame;
 
-		std::string path = "C://cvtemp\\green1.png";
-		cv::Mat frame	 = cv::imread(path);
+		// std::string path = "C://cvtemp\\green1.png";
+		// cv::Mat frame	 = cv::imread(path);
 
-		// if(!cap.read(frame))
-		// {
-		// 	spdlog::error("Can't read the frame from a camera.");
-		// 	return EXIT_FAILURE;
-		// }
-
-		// place_text_info(frame);
-		// draw_rectangle(frame);
-
-		// cv::Mat img_HSV;
-		// cv::cvtColor(frame, img_HSV, cv::COLOR_BGR2HSV);
-		// cv::Mat img_thresholded;
-		// cv::inRange(
-		// 	img_HSV,
-		// 	cv::Scalar(variables_instance.h_low, variables_instance.s_low, variables_instance.v_low),
-		// 	cv::Scalar(variables_instance.h_high, variables_instance.s_high, variables_instance.v_high),
-		// 	img_thresholded);
-
-		// cv::erode(img_thresholded, img_thresholded, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(5, 5)));
-		// cv::dilate(img_thresholded, img_thresholded, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(5, 5)));
-
-		// cv::dilate(img_thresholded, img_thresholded, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(5, 5)));
-		// cv::erode(img_thresholded, img_thresholded, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(5, 5)));
-
-		// place_text_info(frame);
+		if(!video_capture_device.read(frame))
+		{
+			spdlog::error("Can't read the frame from a camera.");
+			variables_instance.exit = true;
+		}
 
 		/*
 			Matrix for HSV scheme frame
@@ -153,11 +132,15 @@ void cv_first_lab()
 		cv::Mat drawing = cv::Mat::zeros(frame.size(), CV_8UC3);
 		for(std::size_t i = 0; i < contours.size(); i++)
 		{
-			int thickness = 2;
-			cv::Rect box  = cv::boundingRect(contours[i]);
-			// cv::rectangle(frame, box, cv::Scalar(255, 255, 255), thickness, cv::LINE_8);
-			draw_rectangle(frame, box);
+            if(contours[i].size() >= variables_instance.contours_min_size)
+			{
+				int thickness = 2;
+				cv::Rect box  = cv::boundingRect(contours[i]);
+				draw_rectangle(frame, box);
+			}
 		}
+
+		place_text_info(frame);
 
 		cv::imshow("Thresholded Image", img_thresholded);
 		cv::imshow(window_name, frame);
@@ -167,7 +150,6 @@ void cv_first_lab()
 		{
 			spdlog::info("Esc key is pressed by user.");
 			spdlog::info("Stoppig the video.");
-			// exit(EXIT_SUCCESS);
 			variables_instance.exit = true;
 		}
 	}
