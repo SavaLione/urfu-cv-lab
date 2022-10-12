@@ -88,6 +88,8 @@ find_package(spdlog REQUIRED)
 #################################################################################
 # core
 set(LYSSA_CORE_SRC
+    src/core/compiler_version.h
+    src/core/compiler_version.cpp
     src/core/cv.h
     src/core/cv.cpp
     src/core/gui.h

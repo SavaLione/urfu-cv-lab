@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: BSD-3-Clause
  * 
- * Copyright (c) 2022, Saveliy Pototskiy (SavaLione) (savalione.com)
+ * Copyright (c) 2021-2022, Saveliy Pototskiy (SavaLione) (savalione.com)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,51 +30,15 @@
  */
 /**
  * @file
- * @brief Variables
+ * @brief A simple function to determine the compiler name and version
  * @author Saveliy Pototskiy (SavaLione)
- * @date 01 Oct 2022
+ * @date 3 Mar 2021
  */
-#ifndef CORE_VARIABLES_H
-#define CORE_VARIABLES_H
+#ifndef CORE_COMPILER_VERSION_H
+#define CORE_COMPILER_VERSION_H
 
-class variables
-{
-public:
-	static variables &instance()
-	{
-		static variables v;
-		return v;
-	}
+#include <string>
 
-	~variables();
+std::string compiler_version();
 
-	int test_variable = 0;
-
-	// int h_low  = 25;
-	// int h_high = 100;
-	int h_low  = 77;
-	int h_high = 97;
-	int s_low  = 50;
-	int s_high = 255;
-	int v_low  = 70;
-	int v_high = 255;
-
-	int box_colour_r = 255;
-	int box_colour_g = 0;
-	int box_colour_b = 255;
-
-	bool exit = false;
-
-	int contours_min_size = 50;
-
-	bool show_green_opencv_text = true;
-
-	bool about_window = true;
-
-private:
-	variables();
-	variables(variables const &)			= delete;
-	variables &operator=(variables const &) = delete;
-};
-
-#endif // CORE_VARIABLES_H
+#endif // CORE_COMPILER_VERSION_H

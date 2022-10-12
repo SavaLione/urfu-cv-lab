@@ -41,6 +41,7 @@
 #include "core/variables.h"
 
 #include <future>
+#include <spdlog/spdlog.h>
 
 int main()
 {
@@ -49,6 +50,8 @@ int main()
 
 	auto async_gui = std::async(gui);
 	auto async_ocv = std::async(cv_first_lab);
+
+	spdlog::info("Exiting the application.");
 
 	return 0;
 }

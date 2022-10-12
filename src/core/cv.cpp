@@ -51,17 +51,25 @@ void draw_rectangle(cv::Mat &frame, cv::Rect const &rectangle);
 
 void place_text_info(cv::Mat &frame)
 {
-	std::string label = "Pototskiy Saveliy (FOM-210510)";
+	std::string label = "Pototskiy Saveliy";
 
 	cv::putText(frame, label, cv::Point(0, 15), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 255, 0));
 }
 
 void draw_rectangle(cv::Mat &frame, cv::Rect const &rectangle)
 {
+	/* Variables initialization */
+	variables &variables_instance = variables::instance();
+
 	int thickness = 2;
 
 	// Drawing the Rectangle
-	cv::rectangle(frame, rectangle, cv::Scalar(255, 255, 255), thickness, cv::LINE_8);
+	cv::rectangle(
+		frame,
+		rectangle,
+		cv::Scalar(variables_instance.box_colour_r, variables_instance.box_colour_g, variables_instance.box_colour_b),
+		thickness,
+		cv::LINE_8);
 }
 
 void cv_first_lab()
@@ -92,9 +100,6 @@ void cv_first_lab()
 	{
 		cv::Mat frame;
 
-		// std::string path = "C://cvtemp\\green1.png";
-		// cv::Mat frame	 = cv::imread(path);
-
 		if(!video_capture_device.read(frame))
 		{
 			spdlog::error("Can't read the frame from a camera.");
@@ -107,6 +112,7 @@ void cv_first_lab()
 		*/
 		cv::Mat frame_HSV;
 
+		/* Matrix for tresholded image by color */
 		cv::Mat img_thresholded;
 
 		/*
@@ -116,40 +122,62 @@ void cv_first_lab()
 		*/
 		cv::cvtColor(frame, frame_HSV, cv::COLOR_BGR2HSV);
 
-		cv::Scalar green_mask_low(variables_instance.h_low, variables_instance.s_low, variables_instance.v_low);
-		cv::Scalar green_mask_high(variables_instance.h_high, variables_instance.s_high, variables_instance.v_high);
+		/* We create HSV range values by selected HSV colorspace */
+		cv::Scalar hsv_mask_low(variables_instance.h_low, variables_instance.s_low, variables_instance.v_low);
+		cv::Scalar hsv_mask_high(variables_instance.h_high, variables_instance.s_high, variables_instance.v_high);
 
-		cv::inRange(frame_HSV, green_mask_low, green_mask_high, img_thresholded);
+		/* We detect the object based on HSV range values */
+		cv::inRange(frame_HSV, hsv_mask_low, hsv_mask_high, img_thresholded);
 
+		/*
+            We are using OpenCV erosion function with 5x5 pixels core size
+            The value of the output pixel is the minimum value of all pixels in the neighborhood
+        */
 		cv::erode(img_thresholded, img_thresholded, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(5, 5)));
+
+		/*
+            We are using OpenCV dilation function  with 5x5 kernel size
+            The value of outpit pixel is the maximum value of all pixels in the neighborhood
+        */
 		cv::dilate(img_thresholded, img_thresholded, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(5, 5)));
 
+		/*
+            After the morphological operations that we have done, we want to find contours of the objects
+            We create two vectors:
+                contours  - vector with detected contours. Each contour is stored as a vector of points
+                hierarchy - vector that containing information about the image topology
+        */
 		std::vector<std::vector<cv::Point>> contours;
 		std::vector<cv::Vec4i> hierarchy;
 
+		/* We use the OpenCV function findContours to find all contours in the thresholded image */
 		cv::findContours(img_thresholded, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
 
+		/* We are drawing finded contours */
 		cv::Mat drawing = cv::Mat::zeros(frame.size(), CV_8UC3);
 		for(std::size_t i = 0; i < contours.size(); i++)
 		{
-            if(contours[i].size() >= variables_instance.contours_min_size)
+			/* We will draw only those contours that are greater that the given value */
+			if(contours[i].size() >= variables_instance.contours_min_size)
 			{
-				int thickness = 2;
-				cv::Rect box  = cv::boundingRect(contours[i]);
+				cv::Rect box = cv::boundingRect(contours[i]);
 				draw_rectangle(frame, box);
 			}
 		}
 
-		place_text_info(frame);
+		if(variables_instance.show_green_opencv_text)
+		{
+			place_text_info(frame);
+		}
 
+		/* We are showing the result */
 		cv::imshow("Thresholded Image", img_thresholded);
 		cv::imshow(window_name, frame);
-		// cv::imshow("drawing", drawing);
 
 		if(cv::waitKey(10) == 27)
 		{
 			spdlog::info("Esc key is pressed by user.");
-			spdlog::info("Stoppig the video.");
+			spdlog::info("Stoppig the application.");
 			variables_instance.exit = true;
 		}
 	}

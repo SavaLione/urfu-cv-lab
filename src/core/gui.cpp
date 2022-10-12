@@ -47,10 +47,10 @@
 #include <GLFW/glfw3.h>
 // clang-format on
 
+#include "core/compiler_version.h"
 #include "core/variables.h"
 
 #include <spdlog/spdlog.h>
-
 
 static void glfw_error_callback(int error, const char *description)
 {
@@ -150,24 +150,7 @@ void gui()
 		ImGui::NewFrame();
 
 		{
-			// static float f	   = 0.0f;
-			// static int counter = 0;
-
 			ImGui::Begin("Variables");
-
-			// ImGui::Text("This is some useful text.");		   // Display some text (you can use a format strings too)
-			// ImGui::Checkbox("Demo Window", &show_demo_window); // Edit bools storing our window open/close state
-			// ImGui::Checkbox("Another Window", &show_another_window);
-
-			// ImGui::SliderFloat("float", &f, 0.0f, 1.0f);			 // Edit 1 float using a slider from 0.0f to 1.0f
-			// ImGui::ColorEdit3("clear color", (float *)&clear_color); // Edit 3 floats representing a color
-
-			// if(ImGui::Button("Button")) // Buttons return true when clicked (most widgets return true when edited/activated)
-			// 	counter++;
-			// ImGui::SameLine();
-			// ImGui::Text("counter = %d", counter);
-
-			// ImGui::SliderInt("test_variable", &variables_instance.test_variable, 0, 255);
 
 			ImGui::SliderInt("H low", &variables_instance.h_low, 0, 255);
 			ImGui::SliderInt("H high", &variables_instance.h_high, 0, 255);
@@ -176,18 +159,55 @@ void gui()
 			ImGui::SliderInt("V low", &variables_instance.v_low, 0, 255);
 			ImGui::SliderInt("V high", &variables_instance.v_high, 0, 255);
 
-            ImGui::Separator();
+			ImGui::Separator();
 
-            ImGui::SliderInt("Contours minimum size", &variables_instance.contours_min_size, 0, 1024);
+			ImGui::SliderInt("Contours minimum size", &variables_instance.contours_min_size, 0, 1024);
+            ImGui::SliderInt("Box colour R", &variables_instance.box_colour_r, 0, 255);
+            ImGui::SliderInt("Box colour G", &variables_instance.box_colour_g, 0, 255);
+            ImGui::SliderInt("Box colour B", &variables_instance.box_colour_b, 0, 255);
 
 			ImGui::Separator();
+
+			if(ImGui::Button("OpenCV green text"))
+			{
+				variables_instance.show_green_opencv_text = !variables_instance.show_green_opencv_text;
+			}
+
+			ImGui::Separator();
+
 			if(ImGui::Button("Exit"))
 			{
 				variables_instance.exit = true;
 			}
 
+			ImGui::Separator();
+
 			ImGui::Text(
 				"Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+			ImGui::End();
+		}
+
+		{
+			ImGui::Begin("About", &variables_instance.about_window);
+
+			ImGui::Text("Author: Saveliy Pototsky (SavaLione)");
+			ImGui::Text("Website: savalione.com");
+			ImGui::Text("github: github.com/SavaLione");
+
+			ImGui::Text("c++ version: ");
+			ImGui::SameLine();
+			std::string cpp_version = std::to_string(__cplusplus);
+			ImGui::Text(cpp_version.c_str());
+			ImGui::Text("Compiler: ");
+			ImGui::SameLine();
+			ImGui::Text(compiler_version().c_str());
+			ImGui::Text("Compile date: ");
+			ImGui::SameLine();
+			std::string date = __DATE__;
+			date += " ";
+			date += __TIME__;
+			ImGui::Text(date.c_str());
+
 			ImGui::End();
 		}
 
@@ -204,6 +224,7 @@ void gui()
 	}
 
 	// Cleanup
+    spdlog::info("ImGui cleanup.");
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
