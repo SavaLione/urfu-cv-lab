@@ -190,7 +190,7 @@ void gui()
 		{
 			ImGui::Begin("About", &variables_instance.about_window);
 
-			ImGui::Text("Author: Saveliy Pototsky (SavaLione)");
+			ImGui::Text("Author: Saveliy Pototskiy (SavaLione)");
 			ImGui::Text("Website: savalione.com");
 			ImGui::Text("github: github.com/SavaLione");
 
