@@ -3,6 +3,11 @@ This repository contains completed laboratory works on the discipline: "Machine 
 
 The code with the first laboratory work located in ``src/core/cv.h`` and ``src/core/cv.cpp``.
 
+YouTube showcase:
+|Laboratory work            |Link                           |
+|:--------------------------|:------------------------------|
+|1. Color object detection  |https://youtu.be/g2nTBMgWjxk   |
+
 ## Project structure
 Directories:
 |Directory|Description|
